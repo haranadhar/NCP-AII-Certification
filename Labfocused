@@ -1,0 +1,191 @@
+Lab approach
+Use three environments:
+Environment	Use
+Lambda Cloud single-GPU VM	nvidia-smi, CUDA containers, DCGM, GPU diagnostics, single-node NCCL, storage tests
+Local Windows/WSL or VMs	Linux, Ansible, Slurm concepts, runbooks, architecture diagrams
+NVIDIA course labs/simulators	BCM, UFM, CVT, BlueField, physical hardware workflows that cannot be authentically reproduced on a cloud VM
+
+
+Do not claim hands-on BCM, UFM, CVT, or BlueField administration unless you complete a real NVIDIA course lab or have physical equipment access.
+Weekly commitment
+- 12–15 hours/week
+- 7–9 hours labs
+- 3–4 hours concepts/documentation
+- Every week: publish one sanitized GitHub artifact in 04-runbooks-benchmarks-troubleshooting/
+Month 1 — Bring-up, physical layer, and control plane
+Week 1 — GPU server bring-up and acceptance
+Exam focus: System and Server Bring-up
+Learn:
+- DGX vs HGX vs generic GPU server
+- GPU, CPU, PCIe, NUMA, NVLink/NVSwitch, HBM
+- BMC, OOB management, TPM, BIOS/UEFI
+- Management, storage, and high-speed network planes
+- Day 0 / Day 1 / Day 2 operations
+Hands-on Lambda GPU lab:
+nvidia-smi
+nvidia-smi -q
+nvidia-smi topo -m
+nvidia-smi dmon -s pucvmet
+lspci | grep -i nvidia
+lscpu
+numactl --hardware
+lsblk
+Create:
+- GPU Server Day-0 Acceptance Checklist
+- HGX 8-GPU architecture diagram
+- Asset inventory template: serial number, GPU model, NIC, firmware, rack/U position, BMC IP, switch port
+Deliverable: gpu-server-acceptance-checklist.md
+Week 2 — Firmware, power, cooling, cabling, and fault isolation
+Exam focus: firmware upgrades, physical GPUs, power/cooling, cables/transceivers
+Learn:
+- Firmware compatibility: BMC, BIOS, GPU, NIC, switch, NVSwitch, BlueField, transceiver
+- PCIe device discovery and GPU enumeration
+- Power budget, redundant power feeds, cooling/airflow
+- DAC vs AOC vs optical transceivers
+- Common failures: missing GPU, fan fault, ECC/Xid error, PCIe issue, bad cable, incorrect optic
+Hands-on:
+nvidia-smi -q -d ECC
+nvidia-smi -q -d POWER
+nvidia-smi -q -d TEMPERATURE
+nvidia-smi -q -d PERFORMANCE
+dmesg | grep -i -E "nvidia|xid|pcie"
+lspci -vv
+Create 10 incident scenarios, for example:
+- GPU not visible after reboot
+- GPU overheating under load
+- PCIe link speed below expected
+- Firmware mismatch after maintenance
+- Link down after cable replacement
+Deliverable: hardware-fault-troubleshooting-matrix.md
+Week 3 — Control plane: BCM, OS provisioning, Slurm, Enroot, Pyxis
+Exam focus: 19% Control Plane Installation and Configuration
+Learn:
+- BCM architecture: head node, images, categories, overlays, node states, HA
+- Provisioning lifecycle: PXE → OS image → configuration → drivers → validation
+- Slurm concepts: controller, compute nodes, partitions, accounts, QoS, jobs
+- Enroot and Pyxis: containers for Slurm/HPC workloads
+- NVIDIA driver, CUDA, Container Toolkit, NGC CLI
+Hands-on:
+- Install Slurm on local Ubuntu VMs or one controller/one worker setup.
+- Submit a basic Slurm job.
+- Build a GPU-ready node configuration checklist.
+- On Lambda, run CUDA in a container:
+docker run --rm --gpus all \
+  nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
+- Install and validate NVIDIA Container Toolkit.
+- Create an NGC account and install NGC CLI if available.
+Deliverable: gpu-cluster-provisioning-runbook.md
+Note: BCM itself is best practiced through NVIDIA’s AI Infrastructure Professional workshop/lab. The NCP-AII blueprint specifically tests BCM, Slurm, Enroot, and Pyxis. NCP-AII blueprint
+Week 4 — BlueField, DOCA, MIG, and AI-factory topology
+Exam focus: Physical Layer Management
+Learn:
+- BlueField DPU vs ConnectX NIC vs SuperNIC
+- DPU mode vs NIC mode
+- RShim, OOB management, representors, embedded switch
+- DOCA purpose and driver/BF-Bundle lifecycle
+- MIG: GPU partitioning, profiles, isolation, suitable workloads
+- Rail-optimized AI-factory network design
+Hands-on:
+- Build a 64-GPU AI-factory topology:
+  - 8 × 8-GPU servers
+  - management network
+  - storage network
+  - InfiniBand or RoCE/Ethernet compute fabric
+  - BlueField/ConnectX placement
+- Use NVIDIA DOCA documentation or emulator/container where accessible.
+- Create a MIG decision matrix: when to use full GPU, MIG, or fractional GPU scheduling.
+Deliverable: bluefield-mig-ai-factory-design.md
+Month 2 — Testing, verification, performance, and troubleshooting
+Week 5 — GPU diagnostics, stress testing, and DCGM
+Exam focus: Cluster Test and Verification
+Learn:
+- GPU health baselining
+- DCGM diagnostics, policy, telemetry, and error reporting
+- GPU utilization, memory, power, temperature, ECC, Xid errors
+- Difference between a health test, burn-in test, and workload benchmark
+Hands-on:
+On Lambda, install/use DCGM where supported. Run:
+nvidia-smi
+nvidia-smi dmon -s pucvmet
+nvidia-smi --query-gpu=name,temperature.gpu,power.draw,utilization.gpu,memory.used \
+  --format=csv -l 5
+If dcgmi is available:
+dcgmi discovery -l
+dcgmi diag -r 1
+Deploy DCGM Exporter with Prometheus/Grafana if your GPU lab supports Kubernetes.
+Deliverable: GPU health dashboard screenshots plus gpu-health-baseline-report.md.
+Week 6 — NCCL, NVLink/NVSwitch, HPL, and performance validation
+Exam focus: NCCL, HPL, NeMo, ClusterKit, burn-in
+Learn:
+- What NCCL validates
+- Intra-node: PCIe vs NVLink vs NVSwitch
+- Inter-node: InfiniBand/RoCE fabric bandwidth
+- HPL purpose: compute-performance validation
+- ClusterKit purpose: multi-dimensional cluster assessment
+- NeMo burn-in purpose: realistic AI-workload validation
+Hands-on:
+nvidia-smi topo -m
+nvidia-smi nvlink -s
+Run a single-node NCCL test if your Lambda image/container supports it. Capture:
+- GPU count
+- Topology
+- Collective tested
+- Message sizes
+- Bandwidth
+- Errors or anomalies
+Do not invent multi-node results. Instead, write the multi-node validation procedure, success thresholds, expected evidence, and remediation path.
+Deliverable: nccl-hpl-cluster-validation-plan.md
+Week 7 — Fabric, cable, transceiver, and storage validation
+Exam focus: CVT concepts, signal quality, UFM, storage testing
+Learn:
+- CVT: what it validates and where it fits in deployment
+- UFM: topology, Subnet Manager, health, link state, bandwidth, congestion
+- ibstat, ibdiagnet, ibnodes, iblinkinfo
+- Firmware on switches, BlueField, NICs, and optics
+- Storage benchmarking: throughput, IOPS, latency, checkpoint performance
+Hands-on:
+- Take NVIDIA Cable Validation Tool Fundamentals.
+- Take Data Center Management Made Easy with NVIDIA UFM.
+- Run local/Lambda disk testing with fio.
+- Create an AI-cluster cable matrix: server NIC → leaf switch → spine switch.
+- Build a UFM dashboard requirements document.
+Example storage lab:
+fio --name=write-test \
+  --filename=testfile \
+  --size=4G \
+  --rw=write \
+  --bs=1M \
+  --direct=1 \
+  --iodepth=16
+Deliverable: fabric-cable-storage-validation-runbook.md
+NVIDIA’s AI Networking learning path currently includes CVT, UFM, InfiniBand, RDMA, and BlueField material. NVIDIA AI Networking learning path
+Week 8 — Capstone: AI cluster acceptance and incident simulation
+Exam focus: Full blueprint integration
+Create a complete customer scenario:
+A financial-services customer is deploying an 8-node, 64-GPU HGX cluster for regulated GenAI inference and model training.
+
+Build these artifacts:
+1. AI-factory reference architecture diagram
+2. Day-0 physical deployment checklist
+3. Day-1 provisioning and BCM/Slurm/Kubernetes design
+4. Firmware/driver compatibility matrix
+5. GPU/NVLink/NCCL/HPL/storage validation plan
+6. DCGM/UFM monitoring design
+7. Troubleshooting matrix
+8. Customer handoff/production-readiness report
+Practice five incident investigations:
+- GPU missing from nvidia-smi
+- GPU pod/job cannot obtain GPU resources
+- NCCL bandwidth below baseline
+- InfiniBand link or transceiver fault
+- Storage throughput slows model checkpointing
+Deliverable: ncp-aii-capstone-ai-cluster-acceptance-report.md
+Certification readiness check
+Take the NCP-AII exam only when you can answer these without notes:
+- What happens from rack installation to a validated production cluster?
+- How do you validate GPU, PCIe, NVLink/NVSwitch, NIC, fabric, and storage?
+- When would you use BCM, Slurm, Kubernetes, and Run:ai?
+- How do you distinguish a GPU, firmware, power, cable, network, or storage problem?
+- What does each tool validate: nvidia-smi, DCGM, NCCL, HPL, ClusterKit, UFM, CVT?
+- How would you explain an AI-factory design to a customer?
+Your certification priority remains NCP-AII first. It gives you the broadest match to the NVIDIA Solutions Architect positions. NCP-AIN is the logical second certification after you build deeper UFM, InfiniBand, RoCE, Spectrum-X, and BlueField experience.
