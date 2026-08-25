@@ -1,0 +1,63 @@
+DGX system bring-up and operations reference. It directly strengthens your understanding of:
+Your target	                                                        Value of this guide
+NCP-AII system/server bring-up (31%)	                                    High
+BMC, OOB management, firmware, power/cooling, cables	                    High
+DGX/HGX architecture for interviews	                                      High
+GPU validation, Docker GPU runtime, basic health checks	                  Medium-high
+BCM, Slurm, UFM, NCCL/HPL/ClusterKit, BlueField	                          Low—not covered enough
+
+
+It is especially useful because it shows the real lifecycle of a DGX H100/H200 node: physical components, network ports, BMC access, first boot, health checks, GPU-container validation, power limits, firmware inventory, Redfish, event logs, cooling, and safe operations.
+But it will not independently prepare you for the certification or the NVIDIA role. It does not provide sufficient hands-on coverage for:
+- Base Command Manager and HA
+- Slurm, Enroot, Pyxis
+- UFM and InfiniBand fabric operations
+- NCCL, HPL, ClusterKit, NeMo burn-in
+- BlueField/DPU administration and MIG
+- Multi-node cluster deployment and performance troubleshooting
+- Triton/TensorRT-LLM/GenAI inference
+The right approach is: study this guide deeply for one DGX node, then learn how to scale that node into an AI cluster.
+Recommended study sequence: spend about 18–22 focused hours on it across four weeks.
+1. Week 1 — DGX/HGX architecture and networking
+   Read guide pages 3–15 (PDF pages 9–21). Learn the 8-GPU architecture, NVLink/NVSwitch, ConnectX-7 networking, management interfaces, storage, PSU redundancy, and network-port mapping.
+   Deliverable: create a one-page “DGX H100 Node Architecture” diagram and explain the traffic separation: BMC/OOB, management, storage, and InfiniBand compute fabric.
+2. Week 2 — First boot and BMC operations
+   Read pages 17–26 and 39–51 (PDF pages 23–32 and 45–57). Focus on BMC access, isolated management network/VLAN, console access, initial OS/network setup, RAID rebuild awareness, authentication, certificates, and event monitoring.
+   Deliverable: write DGX-Day0-Day1-Runbook.md in your GitHub portfolio:
+   - Rack and cable acceptance
+   - BMC IP configuration and secure access
+   - First boot
+   - Firmware/version collection
+   - OS and network validation
+   - Escalation criteria
+3. Week 3 — GPU health validation and container readiness
+   Read pages 27–34 (PDF pages 33–40). This includes nvsm show health, pre-flight stress tests, Docker validation, and running nvidia-smi inside an NVIDIA CUDA container.
+   Practice this on a Lambda Cloud GPU instance once you have your basic Docker/Kubernetes foundation. This is the first place where Lambda Labs adds real value.
+   Deliverable: save sanitized command output and write gpu-node-validation.md:
+   - nvidia-smi
+   - GPU inventory
+   - Docker GPU runtime test
+   - CUDA container test
+   - Health-check interpretation
+   - Fault/alert decision tree
+4. Week 4 — Power, Redfish, firmware, and troubleshooting
+   Read pages 53–89 (PDF pages 59–95). Focus on power capping, redundancy, Redfish inventory, firmware lifecycle, BIOS settings, thermal/power telemetry, SEL/event logs, and read-only troubleshooting.
+   Deliverable: create a Redfish-and-Firmware-Operations.md runbook. Do not memorize every API command; understand the workflow: inventory → assess health → approve change → firmware update → reboot → validate → document rollback path.
+Skip or only skim:
+- Compliance, notices, and legal sections
+- Detailed physical part numbers
+- Exact cable ordering details beyond knowing how to validate cables/transceivers
+- Deep directory-service integration details unless you are asked about enterprise BMC integration
+For NVIDIA interviews, this guide gives you credible answers to questions such as:
+- “How would you bring up and validate a new DGX node?”
+- “How do you isolate BMC traffic?”
+- “What would you check before accepting a system into production?”
+- “How would you handle firmware and power-management changes safely?”
+- “How do nvidia-smi, NVSM/DCGM, BMC, and Redfish differ?”
+Your strategic priority should be:
+1. This DGX guide — one-node platform fundamentals
+2. NCP-AII labs — BCM, Slurm, NVIDIA Container Toolkit, validation
+3. UFM + InfiniBand + CVT — fabric-level operations
+4. NCCL/HPL/ClusterKit — cluster acceptance and performance
+5. Lambda Cloud — GPU, containers, inference, and benchmark evidence
+6. GitHub runbooks and architecture diagrams — proof that you can communicate with customers
