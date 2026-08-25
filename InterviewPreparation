@@ -1,0 +1,23 @@
+your preparation must show strength in four areas:
+1. Customer-facing AI infrastructure architecture
+   You already have a strong advantage here from enterprise/cloud architecture and stakeholder engagement.
+2. Large-scale GPU/HPC platform operations
+   DGX/HGX, BMC, firmware, storage, Ethernet/InfiniBand, BCM, Slurm, UFM, DCGM, NCCL, validation, and troubleshooting. This is your main skill gap and highest priority.
+3. Cloud + GenAI deployment
+   Deploying GPU workloads on AWS/Azure/Lambda, Kubernetes, NGC, Triton/NIM/TensorRT-LLM, and explaining performance/cost/scaling trade-offs.
+4. Proof of capability
+   A GitHub portfolio with architecture diagrams, runbooks, validation evidence, benchmark reports, a financial GenAI project, and customer-style presentations.
+Therefore, your focused course order is:
+1. DGX System Administration
+2. Base Command Manager Administration
+3. AI Infrastructure Professional Workshop / NCP-AII preparation
+4. InfiniBand Essentials + UFM
+5. BlueField DPU Administration
+6. NVIDIA AI Enterprise on Bare-Metal Kubernetes
+7. DGX Onboarding for AI Practitioners, Triton/NIM/NeMo concepts
+8. AI Factory Deployment – Compute Track, if available
+9. NCP-AII exam
+10. NCP-AIN only after the above
+Do not spend meaningful time on unrelated NVIDIA tracks such as robotics, graphics, Omniverse, data-science-only certifications, or deep CUDA programming. They will dilute your preparation.
+Your target profile by interview time should be:
+“Enterprise Solutions Architect with cloud experience who can design, bring up, validate, operate, and troubleshoot NVIDIA GPU AI infrastructure—from DGX/HGX node and InfiniBand fabric through BCM/Slurm/Kubernetes to production GenAI inference.”
